@@ -1,9 +1,6 @@
 import einops
 from torch import Tensor
 import torch
-import typing
-
-Shape = tuple[int, ...] | list[int]
 
 class EinChain:
     x: Tensor
@@ -18,8 +15,7 @@ class EinChain:
         self.current_pattern = pattern
 
     def einsum(self, pattern: str, *given_tensors: Tensor) -> 'EinChain':
-        # pattern = tensors_and_target_pattern[-1]
-        tensors = [self.x] + list(given_tensors) # list(tensors_and_target_pattern[:-1])
+        tensors = [self.x] + list(given_tensors)
         res = einops.einsum(*tensors, self._transformation_with_self(pattern))
         return EinChain(res, self._end_pattern(pattern))
 
@@ -53,14 +49,12 @@ class EinChain:
         return self.x
 
     def __repr__(self) -> str:
-        return f"EinChain({self._format_dims()})"
-
-    def _format_dims(self):
-        dims = [
+        dims_str = ', '.join(
             f"{dim_name}={dim}" if not dim_name.isdigit() else str(dim)
             for dim_name, dim in zip(self.current_pattern.split(' '), self.x.shape)
-        ]
-        return ', '.join(dims)
+        )
+        return f"EinChain({dims_str})"
+
 
 if __name__ == "__main__":
     bchw = torch.randn(2, 3, 4, 5)
