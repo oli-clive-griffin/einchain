@@ -41,9 +41,7 @@ class EinChain:
         return pattern.replace('self', self.current_pattern)
 
     def _transformation_to(self, target_pattern: str) -> str:
-        if not target_pattern.strip().startswith('->'):
-            raise ValueError()
-        return f"{self.current_pattern} {target_pattern}"
+        return f"{self.current_pattern} -> {target_pattern}"
 
     def tensor(self) -> Tensor:
         return self.x
@@ -54,16 +52,3 @@ class EinChain:
             for dim_name, dim in zip(self.current_pattern.split(' '), self.x.shape)
         )
         return f"EinChain({dims_str})"
-
-
-if __name__ == "__main__":
-    bchw = torch.randn(2, 3, 4, 5)
-    hwc = torch.randn(4, 5, 3)
-
-    t = (EinChain(bchw, 'b c h w')
-        .rearrange("-> b h w c")
-        .einsum("self, h w c -> b h w", hwc)
-        .rearrange("-> b h w 1")
-        .repeat("-> b h w 3"))
-
-    print(t)
