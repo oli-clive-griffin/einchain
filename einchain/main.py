@@ -23,17 +23,6 @@ class EinChain:
         res = einops.einsum(*tensors, self._transformation_with_self(pattern))
         return EinChain(res, self._end_pattern(pattern))
 
-    def pack(self, pattern, *given_tensors: Tensor) -> 'EinChain':
-        tensors = [self.x] + list(given_tensors)
-        res, ps = einops.pack(tensors, pattern)
-        new_pattern = self._end_pattern(pattern)
-        return EinChain(res, "")
-    
-    def unpack(self, packed_shapes: list[Shape], target_pattern: str) -> 'EinChain':
-        pattern = self._transformation_to(target_pattern)
-        res = einops.unpack(self.x, packed_shapes, pattern)
-        return EinChain(res, self._end_pattern(target_pattern))
-
     def rearrange(self, target_pattern: str, **axes_lengths: int) -> 'EinChain':
         pattern = self._transformation_to(target_pattern)
         res = einops.rearrange(self.x, pattern, **axes_lengths)
@@ -81,7 +70,6 @@ if __name__ == "__main__":
         .rearrange("-> b h w c")
         .einsum("self, h w c -> b h w", hwc)
         .rearrange("-> b h w 1")
-        .repeat("-> b h w 3")
-        .pack("b h w *", torch.randn(2, 4, 5)))
+        .repeat("-> b h w 3"))
 
     print(t)
